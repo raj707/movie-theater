@@ -5,7 +5,6 @@ import java.util.Objects;
 public class Customer {
 
     private String name;
-
     private String id;
 
     /**
@@ -13,11 +12,25 @@ public class Customer {
      * @param id customer id
      */
     public Customer(String name, String id) {
+        validate(name, id);
         this.id = id; // NOTE - id is not used anywhere at the moment
-
         this.name = name;
 
+    }
+
+    private void validate(String name, String id) {
+        if(name == null || name.trim().isEmpty() || id == null || id.trim().isEmpty()) {
+            throw new IllegalStateException("Customer cannot be created");
         }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getId() {
+        return id;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -34,6 +47,9 @@ public class Customer {
 
     @Override
     public String toString() {
-        return "name: " + name;
+        return "Customer{" +
+                "name='" + name + '\'' +
+                ", id='" + id + '\'' +
+                '}';
     }
 }

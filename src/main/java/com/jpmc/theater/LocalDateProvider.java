@@ -13,7 +13,7 @@ public class LocalDateProvider {
             instance = new LocalDateProvider();
         }
             return instance;
-        }
+    }
 
     public LocalDate currentDate() {
             return LocalDate.now();

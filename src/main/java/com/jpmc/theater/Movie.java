@@ -1,22 +1,41 @@
 package com.jpmc.theater;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.time.Duration;
 import java.util.Objects;
 
 public class Movie {
-    private static int MOVIE_CODE_SPECIAL = 1;
 
     private String title;
-    private String description;
+    @JsonSerialize(using = CustomDurationSerializer.class)
     private Duration runningTime;
     private double ticketPrice;
+    //special code is optional; if not provided will default it to zero (missing)
     private int specialCode;
 
+    public Movie(String title, Duration runningTime, double ticketPrice) {
+        validate(title, runningTime, ticketPrice);
+        this.title = title;
+        this.runningTime = runningTime;
+        this.ticketPrice = ticketPrice;
+    }
+
     public Movie(String title, Duration runningTime, double ticketPrice, int specialCode) {
+        validate(title, runningTime, ticketPrice);
         this.title = title;
         this.runningTime = runningTime;
         this.ticketPrice = ticketPrice;
         this.specialCode = specialCode;
+    }
+
+    private void validate(String title, Duration runningTime, double ticketPrice) {
+        //assuming ticket price cannot be negative but it can be zero (case where its a promotional movie and is free to watch)
+        //note: you can throw individual messages instead of a generic error message like 'Movie cannot be created';
+        //I am doing this way to save some time.
+        if(title == null || title.trim().isEmpty() || runningTime == null || ticketPrice < 0) {
+            throw new IllegalStateException("Movie cannot be created");
+        }
     }
 
     public String getTitle() {
@@ -31,29 +50,8 @@ public class Movie {
         return ticketPrice;
     }
 
-    public double calculateTicketPrice(Showing showing) {
-        return ticketPrice - getDiscount(showing.getSequenceOfTheDay());
-    }
-
-    private double getDiscount(int showSequence) {
-        double specialDiscount = 0;
-        if (MOVIE_CODE_SPECIAL == specialCode) {
-            specialDiscount = ticketPrice * 0.2;  // 20% discount for special movie
-        }
-
-        double sequenceDiscount = 0;
-        if (showSequence == 1) {
-            sequenceDiscount = 3; // $3 discount for 1st show
-        } else if (showSequence == 2) {
-
-            sequenceDiscount = 2; // $2 discount for 2nd show
-        }
-//        else {
-//            throw new IllegalArgumentException("failed exception");
-//        }
-
-        // biggest discount wins
-        return specialDiscount > sequenceDiscount ? specialDiscount : sequenceDiscount;
+    public int getSpecialCode() {
+        return specialCode;
     }
 
     @Override
@@ -63,13 +61,22 @@ public class Movie {
         Movie movie = (Movie) o;
         return Double.compare(movie.ticketPrice, ticketPrice) == 0
                 && Objects.equals(title, movie.title)
-                && Objects.equals(description, movie.description)
                 && Objects.equals(runningTime, movie.runningTime)
                 && Objects.equals(specialCode, movie.specialCode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, description, runningTime, ticketPrice, specialCode);
+        return Objects.hash(title, runningTime, ticketPrice, specialCode);
+    }
+
+    @Override
+    public String toString() {
+        return "Movie{" +
+                "title='" + title + '\'' +
+                ", runningTime=" + runningTime +
+                ", ticketPrice=" + ticketPrice +
+                ", specialCode=" + specialCode +
+                '}';
     }
 }
